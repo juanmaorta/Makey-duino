@@ -1,0 +1,11 @@
+Arduino shield and firmware for variations
+over Make magazine "Makey" project.
+
+http://makezine.com/19/makey/
+
+The shield includes the schematics from the
+magazine as well as some added features:
+
+- piezo buzzer
+- LED
+- 4 sensor inputs (sumobot)
