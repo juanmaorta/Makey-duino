@@ -9,6 +9,7 @@
   */
   
   #define pingPin       9
+  #define servoPin      10
   
   #define  leftEnable   3
   #define leftDir1      2 // sustituir por 2 (antes 6)
@@ -23,6 +24,11 @@
   
   #define BOUNDARY     20      // (cm) Avoid objects closer than 20cm.
   #define INTERVAL     25      // (ms) Interval between distance readings.
+  
+  #define SERVOMAX     2400    // Max travel at 2.4ms = 2400 microseconds
+  #define SERVOMIN     600     // Min travel at 0.6ms =  600 microseconds
+  #define SERVOCENTER  1500    // Center at 1.5ms = 1500 microseconds
+  #define STEP         35      // Decrease for slower motion
 
   void setup() {
     Serial.begin(9600);
@@ -39,6 +45,7 @@
     
 
     pinMode(ledPin, OUTPUT);
+    pinMode(servoPin, OUTPUT);
 
     // set enablePin high so that motor can turn on:
     
@@ -51,8 +58,14 @@
     // digitalWrite(rightEnable, HIGH);
     analogWrite(rightEnable, 255);
     
+    // center the servo
+    digitalWrite(servoPin, HIGH);	    // Send high-going part of pulse
+    delayMicroseconds(1500);          // to servo for 1500us,
+    digitalWrite(servoPin, LOW);      // then low.
     
     blink(ledPin, 4, 500);
+    
+    servoSweep();
     stop();
   }
 
@@ -71,8 +84,9 @@
   // Robot has sensed a nearby object and exited the while loop.
   // Take evasive action to avoid object.          
   backward();                       // Move backward 500ms.
-  delay(500);               
-  rightTurn(300);                   // Turn right 300ms.
+  delay(500);
+  servoSweep();  
+  turn(0, 300);                   // Turn right 300ms.
   }
 
   /*
@@ -128,12 +142,19 @@
    digitalWrite(leftDir2, HIGH);  // set leg 2 of the H-bridge high
  }
  
- void rightTurn(int duration) {
-   Serial.println("Right!");
+ void turn(long dir, int duration) {
+   Serial.println(dir);
+   if (dir == 0) {
    digitalWrite(leftDir1, HIGH);     // Left motor backward.
   digitalWrite(leftDir2, LOW);
   digitalWrite(rightDir1, LOW);     // Right motor forward.
   digitalWrite(rightDir2, HIGH);
+   } else {
+     digitalWrite(leftDir1, LOW);     // Left motor backward.
+    digitalWrite(leftDir2, HIGH);
+    digitalWrite(rightDir1, HIGH);     // Right motor forward.
+    digitalWrite(rightDir2, LOW);
+   }
   delay(duration);                  // Turning time (ms).
 }
 
@@ -169,4 +190,35 @@ long microsecondsToCentimeters(long microseconds) {
   // The ping travels out and back, so to find the distance of the
   // object we take half of the distance traveled.
   return microseconds / 29 / 2;
+}
+
+void servoSweep() {
+ int pulseWidth;                          // Between 600 and 2400us.
+
+  // Sweep servo from center to minimum.
+  for (pulseWidth = SERVOCENTER;pulseWidth >=SERVOMIN;pulseWidth -= STEP)
+  {
+    digitalWrite(servoPin, HIGH);
+    delayMicroseconds(pulseWidth);
+    digitalWrite(servoPin, LOW);
+    delay(20);
+  } 
+
+  // Sweep servo up from minimum to maximum.
+  for (pulseWidth = SERVOMIN; pulseWidth <= SERVOMAX ; pulseWidth+= STEP)
+  {
+    digitalWrite(servoPin, HIGH);
+    delayMicroseconds(pulseWidth);
+    digitalWrite(servoPin, LOW);
+    delay(20);
+  } 
+
+  // Sweep servo down from maximum to center.
+  for (pulseWidth = SERVOMAX; pulseWidth >= SERVOCENTER;pulseWidth-=STEP)
+  {
+    digitalWrite(servoPin, HIGH);
+    delayMicroseconds(pulseWidth);
+    digitalWrite(servoPin, LOW);
+    delay(20);
+  } 
 }
