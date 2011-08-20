@@ -8,6 +8,17 @@
   const int ledPin = 13;      // LED 
   */
   
+   #include "pitches.h"
+  
+  
+  // notes in the melody:
+int melody[] = {
+  NOTE_C4, NOTE_G3,NOTE_G3, NOTE_A3, NOTE_G3,0, NOTE_B3, NOTE_C4};
+
+// note durations: 4 = quarter note, 8 = eighth note, etc.:
+int noteDurations[] = {
+  4, 8, 8, 4,4,4,4,4 };
+  
   #define pingPin       9
   #define servoPin      10
   
@@ -21,6 +32,8 @@
   #define  rightDir2     4
   
   #define  ledPin       13
+  #define  debug        false
+  #define  sound_on     false
   
   #define BOUNDARY     20      // (cm) Avoid objects closer than 20cm.
   #define INTERVAL     25      // (ms) Interval between distance readings.
@@ -29,9 +42,10 @@
   #define SERVOMIN     600     // Min travel at 0.6ms =  600 microseconds
   #define SERVOCENTER  1500    // Center at 1.5ms = 1500 microseconds
   #define STEP         35      // Decrease for slower motion
+  #define buzPin       8
 
   void setup() {
-    Serial.begin(9600);
+    // Serial.begin(9600);
 
     
     pinMode(leftEnable, OUTPUT); 
@@ -63,9 +77,12 @@
     delayMicroseconds(1500);          // to servo for 1500us,
     digitalWrite(servoPin, LOW);      // then low.
     
-    blink(ledPin, 4, 500);
-    
+    blink(ledPin, 4, 500,500);
+    if (sound_on) {
+     on_melody();
+    }
     servoSweep();
+   
     stop();
   }
 
@@ -76,7 +93,7 @@
   do 
   {
     distance = readDistance();      // Take a distance reading.
-    Serial.println(distance);       // Print it out.             
+    // Serial.println(distance);       // Print it out.             
     delay(INTERVAL);                // Delay between readings.
   }
   while(distance >= BOUNDARY);      // Loop while no objects close-by.
@@ -92,13 +109,13 @@
   /*
     blinks an LED
    */
-  void blink(int whatPin, int howManyTimes, int milliSecs) {
+  void blink(int whatPin, int howManyTimes, int milliSecs, int pauseMillis) {
     int i = 0;
     for ( i = 0; i < howManyTimes; i++) {
       digitalWrite(whatPin, HIGH);
       delay(milliSecs/2);
       digitalWrite(whatPin, LOW);
-      delay(milliSecs/2);
+      delay(pauseMillis/2);
     }
   }
 
@@ -117,13 +134,13 @@
    digitalWrite(leftDir1, LOW);   // set leg 1 of the H-bridge low
    digitalWrite(leftDir2, LOW);  // set leg 2 of the H-bridge high
    */
-   Serial.println("stop");
+   // Serial.println("stop");
  }
 
  // Move the robot forward
  // 
  void forward() {
-   Serial.println("Go!");
+   // Serial.println("Go!");
    digitalWrite(rightDir1, HIGH);   // set leg 1 of the H-bridge low
    digitalWrite(rightDir2, LOW);  // set leg 2 of the H-bridge high
 
@@ -133,7 +150,10 @@
  }
  
   void backward() {
-  Serial.println("Back!");
+   if (sound_on) {
+    blink(buzPin, 1, 1000,500);
+   }
+   
    digitalWrite(rightDir1, LOW);   // set leg 1 of the H-bridge low
    digitalWrite(rightDir2, HIGH);  // set leg 2 of the H-bridge high
 
@@ -143,7 +163,7 @@
  }
  
  void turn(long dir, int duration) {
-   Serial.println(dir);
+   // Serial.println(dir);
    if (dir == 0) {
    digitalWrite(leftDir1, HIGH);     // Left motor backward.
   digitalWrite(leftDir2, LOW);
@@ -221,4 +241,24 @@ void servoSweep() {
     digitalWrite(servoPin, LOW);
     delay(20);
   } 
+}
+
+void on_melody () {
+  // iterate over the notes of the melody:
+  for (int thisNote = 0; thisNote < 8; thisNote++) {
+
+    // to calculate the note duration, take one second 
+    // divided by the note type.
+    //e.g. quarter note = 1000 / 4, eighth note = 1000/8, etc.
+    int noteDuration = 1000/noteDurations[thisNote];
+    tone(buzPin, melody[thisNote],noteDuration);
+
+    // to distinguish the notes, set a minimum time between them.
+    // the note's duration + 30% seems to work well:
+    int pauseBetweenNotes = noteDuration * 1.30;
+    delay(pauseBetweenNotes);
+    // stop the tone playing:
+    noTone(buzPin);
+  }
+  
 }
