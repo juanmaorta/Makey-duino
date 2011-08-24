@@ -12,12 +12,10 @@
   
   
   // notes in the melody:
-int melody[] = {
-  NOTE_C4, NOTE_G3,NOTE_G3, NOTE_A3, NOTE_G3,0, NOTE_B3, NOTE_C4};
+  int melody[] = {NOTE_C4, NOTE_G3,NOTE_G3, NOTE_A3, NOTE_G3,0, NOTE_B3, NOTE_C4};
 
 // note durations: 4 = quarter note, 8 = eighth note, etc.:
-int noteDurations[] = {
-  4, 8, 8, 4,4,4,4,4 };
+  int noteDurations[] = {4, 8, 8, 4,4,4,4,4 };
   
   #define pingPin       9
   #define servoPin      10
@@ -43,6 +41,10 @@ int noteDurations[] = {
   #define SERVOCENTER  1500    // Center at 1.5ms = 1500 microseconds
   #define STEP         35      // Decrease for slower motion
   #define buzPin       8
+  
+  int enablePins[] = {rightEnable, leftEnable};
+  int rightDirPins[] = {leftDir1, leftDir2};
+  int leftDirPins[] = {rightDir1, rightDir2};
 
   void setup() {
     // Serial.begin(9600);
@@ -60,17 +62,6 @@ int noteDurations[] = {
 
     pinMode(ledPin, OUTPUT);
     pinMode(servoPin, OUTPUT);
-
-    // set enablePin high so that motor can turn on:
-    
-    digitalWrite(leftEnable, LOW); 
-    // digitalWrite(leftEnable, HIGH); 
-    analogWrite(leftEnable, 255);
-    
-   
-    digitalWrite(rightEnable, LOW); 
-    // digitalWrite(rightEnable, HIGH);
-    analogWrite(rightEnable, 255);
     
     // center the servo
     digitalWrite(servoPin, HIGH);	    // Send high-going part of pulse
@@ -83,28 +74,28 @@ int noteDurations[] = {
     }
     servoSweep();
    
-    stop();
+    stop(enablePins, rightDirPins, leftDirPins);
   }
 
   void loop() {
-  long distance;                    // Distance reading from rangefinder.
+    long distance;                    // Distance reading from rangefinder.
   
-  forward();                        // Robot moves forward continuously.
-  do 
-  {
-    distance = readDistance();      // Take a distance reading.
-    // Serial.println(distance);       // Print it out.             
-    delay(INTERVAL);                // Delay between readings.
-  }
-  while(distance >= BOUNDARY);      // Loop while no objects close-by.
+    forward(enablePins, rightDirPins, leftDirPins, 255);                        // Robot moves forward continuously.
+    do {
+      distance = readDistance();      // Take a distance reading.
+      // Serial.println(distance);       // Print it out.             
+      delay(INTERVAL);                // Delay between readings.
+    } while(distance >= BOUNDARY);      // Loop while no objects close-by.
   
-  // Robot has sensed a nearby object and exited the while loop.
-  // Take evasive action to avoid object.          
-  stop();
-  delay(800);
+    // Robot has sensed a nearby object and exited the while loop.
+    // Take evasive action to avoid object.          
+    stop(enablePins, rightDirPins, leftDirPins);
+    backwards(enablePins, rightDirPins, leftDirPins, 80);
+    delay(800);
  
-  turn(0, 300);                   // Turn right 300ms.
-   // servoSweep();  
+    turn(0, 200, sound_on);                   // Turn right 300ms.
+    stop(enablePins, rightDirPins, leftDirPins);
+    servoSweep();  
   }
 
   /*
@@ -120,69 +111,9 @@ int noteDurations[] = {
     }
   }
 
- void stop() {
-    digitalWrite(leftEnable, LOW); 
-    digitalWrite(leftEnable, HIGH); 
-    
-   
-    digitalWrite(rightEnable, LOW); 
-    digitalWrite(rightEnable, HIGH); 
-   
-   digitalWrite(rightDir1, LOW);   // set leg 1 of the H-bridge low
-   digitalWrite(rightDir2, LOW);  // set leg 2 of the H-bridge high
 
-    // delay(2000);
-   digitalWrite(leftDir1, LOW);   // set leg 1 of the H-bridge low
-   digitalWrite(leftDir2, LOW);  // set leg 2 of the H-bridge high
-   
-   // Serial.println("stop");
- }
-
- // Move the robot forward
- // 
- void forward() {
-   // Serial.println("Go!");
-   digitalWrite(rightDir1, HIGH);   // set leg 1 of the H-bridge low
-   digitalWrite(rightDir2, LOW);  // set leg 2 of the H-bridge high
-
-    // delay(2000);
-   digitalWrite(leftDir1, HIGH);   // set leg 1 of the H-bridge low
-   digitalWrite(leftDir2, LOW);  // set leg 2 of the H-bridge high
- }
  
-  void backward() {
-   if (sound_on) {
-    blink(buzPin, 1, 1000,500);
-   }
-   
-   digitalWrite(rightDir1, LOW);   // set leg 1 of the H-bridge low
-   digitalWrite(rightDir2, HIGH);  // set leg 2 of the H-bridge high
 
-    // delay(2000);
-   digitalWrite(leftDir1, LOW);   // set leg 1 of the H-bridge low
-   digitalWrite(leftDir2, HIGH);  // set leg 2 of the H-bridge high
- }
- 
- void turn(long dir, int duration) {
-
-   
-   // Serial.println(dir);
-   if (dir == 0) {
-   digitalWrite(leftDir1, HIGH);     // Left motor backward.
-  digitalWrite(leftDir2, LOW);
-  digitalWrite(rightDir1, LOW);     // Right motor forward.
-  digitalWrite(rightDir2, HIGH);
-   } else {
-     digitalWrite(leftDir1, LOW);     // Left motor backward.
-    digitalWrite(leftDir2, HIGH);
-    digitalWrite(rightDir1, HIGH);     // Right motor forward.
-    digitalWrite(rightDir2, LOW);
-   }
-  delay(duration);                  // Turning time (ms).
-   if (sound_on) {
-    blink(buzPin, 1, 1000,500);
-   }
-}
 
 // readDistance
 // Take a distance reading from Ping ultrasonic rangefinder.

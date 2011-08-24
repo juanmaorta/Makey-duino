@@ -9,9 +9,11 @@
 #define rightDir1    12
 #define rightDir2    4
 
+int enablePins[] = {rightEnable, leftEnable};
+int rightDirPins[] = {leftDir1, leftDir2};
+int leftDirPins[] = {rightDir1, rightDir2};
+
 void setup() {
-  Serial.begin(9600); 
-  
    pinMode(ledPin, OUTPUT);
    pinMode(leftEnable, OUTPUT);
    pinMode(leftDir1, OUTPUT);
@@ -21,56 +23,18 @@ void setup() {
    pinMode(rightDir1, OUTPUT);
    pinMode(rightDir2, OUTPUT);
    
-   // enable motors
-   digitalWrite(leftEnable, HIGH);
-   digitalWrite(rightEnable, HIGH);
-   
-   // gradually increases motor speed
-   digitalWrite(leftDir1, HIGH);
-   digitalWrite(leftDir2, LOW);
-   
-  
-   digitalWrite(rightDir1, HIGH);
-   digitalWrite(rightDir2, LOW);
-  
-  
-   for (int value = 40; value <= 250; value++) {
-     analogWrite(leftEnable, value);
-     analogWrite(rightEnable, value);
-     delay(20);
-   }
+   forward(enablePins, rightDirPins, leftDirPins);
    
    // stops motors
-   digitalWrite(leftEnable, LOW);
-   digitalWrite(rightEnable, LOW);
+   stop(enablePins, rightDirPins, leftDirPins);
    
-   // changes direction
-   digitalWrite(leftDir1, LOW);
-   digitalWrite(leftDir2, HIGH);
-   
-  
-   digitalWrite(rightDir1, LOW);
-   digitalWrite(rightDir2, HIGH);
-   
-   for (int value = 40; value <= 250; value++) {
-     analogWrite(leftEnable, value);
-      analogWrite(rightEnable, value);
-      delay(20);
-   }
+   backwards(enablePins, rightDirPins, leftDirPins);
    
    // stops motors
-   digitalWrite(leftDir1, LOW);
-   digitalWrite(leftDir2, LOW);
-   
-  
-   digitalWrite(rightDir1, LOW);
-   digitalWrite(rightDir2, LOW);
-   
-   digitalWrite(leftEnable, LOW);
-   digitalWrite(rightEnable, LOW);
+   stop(enablePins, rightDirPins, leftDirPins);
 
 }
 
 void loop() {
-  
+
 }
