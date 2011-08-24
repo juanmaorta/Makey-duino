@@ -33,7 +33,7 @@ int noteDurations[] = {
   
   #define  ledPin       13
   #define  debug        false
-  #define  sound_on     false
+  #define  sound_on     true
   
   #define BOUNDARY     20      // (cm) Avoid objects closer than 20cm.
   #define INTERVAL     25      // (ms) Interval between distance readings.
@@ -100,10 +100,11 @@ int noteDurations[] = {
   
   // Robot has sensed a nearby object and exited the while loop.
   // Take evasive action to avoid object.          
-  backward();                       // Move backward 500ms.
-  delay(500);
-  servoSweep();  
+  stop();
+  delay(800);
+ 
   turn(0, 300);                   // Turn right 300ms.
+   // servoSweep();  
   }
 
   /*
@@ -120,20 +121,20 @@ int noteDurations[] = {
   }
 
  void stop() {
-       digitalWrite(leftEnable, LOW); 
+    digitalWrite(leftEnable, LOW); 
     digitalWrite(leftEnable, HIGH); 
     
    
     digitalWrite(rightEnable, LOW); 
     digitalWrite(rightEnable, HIGH); 
-   /*
+   
    digitalWrite(rightDir1, LOW);   // set leg 1 of the H-bridge low
    digitalWrite(rightDir2, LOW);  // set leg 2 of the H-bridge high
 
     // delay(2000);
    digitalWrite(leftDir1, LOW);   // set leg 1 of the H-bridge low
    digitalWrite(leftDir2, LOW);  // set leg 2 of the H-bridge high
-   */
+   
    // Serial.println("stop");
  }
 
@@ -163,6 +164,8 @@ int noteDurations[] = {
  }
  
  void turn(long dir, int duration) {
+
+   
    // Serial.println(dir);
    if (dir == 0) {
    digitalWrite(leftDir1, HIGH);     // Left motor backward.
@@ -176,6 +179,9 @@ int noteDurations[] = {
     digitalWrite(rightDir2, LOW);
    }
   delay(duration);                  // Turning time (ms).
+   if (sound_on) {
+    blink(buzPin, 1, 1000,500);
+   }
 }
 
 // readDistance
