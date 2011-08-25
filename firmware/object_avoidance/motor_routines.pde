@@ -72,3 +72,34 @@ void stop(int enablePins[], int rightDirPins[], int leftDirPins[]) {
    digitalWrite(enablePins[1], LOW);
 
 }
+
+void servoSweep(int speed) {
+ int pulseWidth;                          // Between 600 and 2400us.
+
+  // Sweep servo from center to minimum.
+  for (pulseWidth = SERVOCENTER;pulseWidth >=SERVOMIN;pulseWidth -= STEP)
+  {
+    digitalWrite(servoPin, HIGH);
+    delayMicroseconds(pulseWidth);
+    digitalWrite(servoPin, LOW);
+    delay(speed);
+  } 
+
+  // Sweep servo up from minimum to maximum.
+  for (pulseWidth = SERVOMIN; pulseWidth <= SERVOMAX ; pulseWidth+= STEP)
+  {
+    digitalWrite(servoPin, HIGH);
+    delayMicroseconds(pulseWidth);
+    digitalWrite(servoPin, LOW);
+    delay(speed);
+  } 
+
+  // Sweep servo down from maximum to center.
+  for (pulseWidth = SERVOMAX; pulseWidth >= SERVOCENTER;pulseWidth-=STEP)
+  {
+    digitalWrite(servoPin, HIGH);
+    delayMicroseconds(pulseWidth);
+    digitalWrite(servoPin, LOW);
+    delay(speed);
+  } 
+}

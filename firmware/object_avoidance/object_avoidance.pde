@@ -45,6 +45,7 @@
   int enablePins[] = {rightEnable, leftEnable};
   int rightDirPins[] = {leftDir1, leftDir2};
   int leftDirPins[] = {rightDir1, rightDir2};
+  int servoSpeed = 15;
 
   void setup() {
     // Serial.begin(9600);
@@ -72,7 +73,7 @@
     if (sound_on) {
      on_melody();
     }
-    servoSweep();
+    servoSweep(servoSpeed);
    
     stop(enablePins, rightDirPins, leftDirPins);
   }
@@ -95,7 +96,7 @@
  
     turn(0, 200, sound_on);                   // Turn right 300ms.
     stop(enablePins, rightDirPins, leftDirPins);
-    servoSweep();  
+    servoSweep(servoSpeed);  
   }
 
   /*
@@ -147,37 +148,6 @@ long microsecondsToCentimeters(long microseconds) {
   // The ping travels out and back, so to find the distance of the
   // object we take half of the distance traveled.
   return microseconds / 29 / 2;
-}
-
-void servoSweep() {
- int pulseWidth;                          // Between 600 and 2400us.
-
-  // Sweep servo from center to minimum.
-  for (pulseWidth = SERVOCENTER;pulseWidth >=SERVOMIN;pulseWidth -= STEP)
-  {
-    digitalWrite(servoPin, HIGH);
-    delayMicroseconds(pulseWidth);
-    digitalWrite(servoPin, LOW);
-    delay(20);
-  } 
-
-  // Sweep servo up from minimum to maximum.
-  for (pulseWidth = SERVOMIN; pulseWidth <= SERVOMAX ; pulseWidth+= STEP)
-  {
-    digitalWrite(servoPin, HIGH);
-    delayMicroseconds(pulseWidth);
-    digitalWrite(servoPin, LOW);
-    delay(20);
-  } 
-
-  // Sweep servo down from maximum to center.
-  for (pulseWidth = SERVOMAX; pulseWidth >= SERVOCENTER;pulseWidth-=STEP)
-  {
-    digitalWrite(servoPin, HIGH);
-    delayMicroseconds(pulseWidth);
-    digitalWrite(servoPin, LOW);
-    delay(20);
-  } 
 }
 
 void on_melody () {
