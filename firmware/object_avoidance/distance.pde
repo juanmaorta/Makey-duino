@@ -3,8 +3,8 @@
 // readDistance
 // Take a distance reading from Ping ultrasonic rangefinder.
 // from http://arduino.cc/en/Tutorial/Ping?from=Tutorial.UltrasoundSensor
- 
-long readDistance() {
+
+void readDistance() {
   long duration, inches, cm;
 
   // The Ping is triggered by a HIGH pulse of 2 or more microseconds.
@@ -23,8 +23,8 @@ long readDistance() {
   duration = pulseIn(pingPin, HIGH);
 
   // Convert the time into a distance.
-  cm = microsecondsToCentimeters(duration);
-  return(cm);
+  distance = microsecondsToCentimeters(duration);
+  // return(cm);
 }
 
 long microsecondsToCentimeters(long microseconds) {

@@ -20,6 +20,29 @@ void forward(int enablePins[], int rightDirPins[], int leftDirPins[], int limit)
    }
 }
 
+void forward() {
+   // enable motors
+   digitalWrite(enablePins[0], HIGH);
+   digitalWrite(enablePins[1], HIGH);
+   
+   // gradually increases motor speed
+   digitalWrite(leftDirPins[0], HIGH);
+   digitalWrite(leftDirPins[1], LOW);
+     
+   digitalWrite(rightDirPins[0], HIGH);
+   digitalWrite(rightDirPins[1], LOW);
+   
+   if (motorSpeed < 250) {
+     motorSpeed += 1;
+   }
+   Serial.println(motorSpeed);
+   
+   analogWrite(enablePins[0], motorSpeed);
+   analogWrite(enablePins[1], motorSpeed);
+   
+   
+}
+
 void backwards(int enablePins[], int rightDirPins[], int leftDirPins[], int limit) {
    // enable motors
    digitalWrite(enablePins[0], HIGH);
@@ -37,6 +60,26 @@ void backwards(int enablePins[], int rightDirPins[], int leftDirPins[], int limi
      analogWrite(enablePins[1], value);
      delay(easing);
    }
+}
+
+void backwards() {
+   // enable motors
+   digitalWrite(enablePins[0], HIGH);
+   digitalWrite(enablePins[1], HIGH);
+   
+   // gradually increases motor speed
+   digitalWrite(leftDirPins[0], LOW);
+   digitalWrite(leftDirPins[1], HIGH);
+     
+   digitalWrite(rightDirPins[0], LOW);
+   digitalWrite(rightDirPins[1], HIGH);
+   
+   if (motorSpeed < 250) {
+     motorSpeed += 1;
+   }
+   
+   analogWrite(enablePins[0], motorSpeed);
+   analogWrite(enablePins[1], motorSpeed);
 }
 
  void turn(long dir, int duration, boolean beep) {
@@ -58,6 +101,13 @@ void backwards(int enablePins[], int rightDirPins[], int leftDirPins[], int limi
    if (beep) {
       blink(buzPin, 2, 200,200);
    }
+}
+
+void turn() {
+    digitalWrite(leftDir1, HIGH);     // Left motor backward.
+    digitalWrite(leftDir2, LOW);
+    digitalWrite(rightDir1, LOW);     // Right motor forward.
+    digitalWrite(rightDir2, HIGH);
 }
 
 void stop(int enablePins[], int rightDirPins[], int leftDirPins[]) {

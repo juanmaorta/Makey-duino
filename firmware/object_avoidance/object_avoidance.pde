@@ -13,59 +13,81 @@
 
 
 // notes in the melody:
-int melody[] = {
-  NOTE_C4, NOTE_G3,NOTE_G3, NOTE_A3, NOTE_G3,0, NOTE_B3, NOTE_C4};
+int melody[] = {NOTE_C4, NOTE_G3,NOTE_G3, NOTE_A3, NOTE_G3,0, NOTE_B3, NOTE_C4};
 
 // note durations: 4 = quarter note, 8 = eighth note, etc.:
-int noteDurations[] = {
-  4, 8, 8, 4,4,4,4,4 };
+int noteDurations[] = {4, 8, 8, 4,4,4,4,4 };
 
-#define pingPin       9
-#define servoPin      10
-
+// driving motor pins
 #define  leftEnable   3
 #define leftDir1      2 // sustituir por 2 (antes 6)
 #define  leftDir2     7
-
 
 #define  rightEnable   11
 #define  rightDir1     12 // sustituir por 12 (antes 5)
 #define  rightDir2     4
 
+// misc pins
+#define pingPin       9
+#define servoPin      10
 #define  ledPin       13
-#define  debug        false
-#define  sound_on     true
+#define buzPin       8
 
-#define BOUNDARY     20      // (cm) Avoid objects closer than 20cm.
-#define INTERVAL     25      // (ms) Interval between distance readings.
+#define  debug        true
+#define  sound_on     false
 
+// distance options
+#define BOUNDARY   20      // (cm) Avoid objects closer than 20cm.
+#define INTERVAL   25        // (ms) Interval between distance readings.
+
+// servo options
 #define SERVOMAX     2400    // Max travel at 2.4ms = 2400 microseconds
 #define SERVOMIN     600     // Min travel at 0.6ms =  600 microseconds
 #define SERVOCENTER  1500    // Center at 1.5ms = 1500 microseconds
 #define STEP         35      // Decrease for slower motion
-#define buzPin       8
-
-int enablePins[] = {
-  rightEnable, leftEnable};
-int rightDirPins[] = {
-  leftDir1, leftDir2};
-int leftDirPins[] = {
-  rightDir1, rightDir2};
 int servoSpeed = 15;
 
-void setup() {
-  // Serial.begin(9600);
 
+
+int enablePins[] = {rightEnable, leftEnable};
+int rightDirPins[] = {leftDir1, leftDir2};
+int leftDirPins[] = {rightDir1, rightDir2};
+
+// "Global" variables
+boolean ledState = false;
+boolean buzzState = false;
+long distance = 200;
+
+boolean followMode = false;
+
+const int baseSpeed = 50;
+int motorSpeed = baseSpeed;
+boolean resetSpeed = true;
+
+long previousMillis = 0;
+
+// TimedActions
+TimedAction blinkAction  = TimedAction(300,blink);
+TimedAction buzzAction   = TimedAction(800, buzz);
+TimedAction readAction   = TimedAction(INTERVAL, readDistance);
+
+TimedAction forwardAction  = TimedAction(20, forward);
+TimedAction backwardAction = TimedAction(20, backwards);
+TimedAction turnAction = TimedAction(20, turn);
+
+
+void setup() {
+  if (debug){
+    Serial.begin(9600);
+  }
 
   pinMode(leftEnable, OUTPUT); 
   pinMode(leftDir1, OUTPUT); 
   pinMode(leftDir2, OUTPUT);
 
-
   pinMode(rightEnable, OUTPUT); 
   pinMode(rightDir1, OUTPUT); 
   pinMode(rightDir2, OUTPUT);
-
 
   pinMode(ledPin, OUTPUT);
   pinMode(servoPin, OUTPUT);
@@ -75,16 +97,60 @@ void setup() {
   delayMicroseconds(1500);          // to servo for 1500us,
   digitalWrite(servoPin, LOW);      // then low.
 
-  blink(ledPin, 4, 500,500);
+  // start buzz... useful for detecting resetting of the Arduino
+  blink(buzPin, 2, 200,200);
   if (sound_on) {
     on_melody();
   }
-  servoSweep(servoSpeed);
-
   stop(enablePins, rightDirPins, leftDirPins);
 }
 
 void loop() {
+  blinkAction.check();
+  buzzAction.check();
+  
+  buzzAction.disable();
+  
+  readAction.check();
+  forwardAction.check();
+  backwardAction.check();
+  backwardAction.disable();
+  turnAction.check();
+  turnAction.disable();
+
+  
+  if (distance < BOUNDARY) {
+    
+    forwardAction.disable();
+    // motorSpeed = baseSpeed;
+    if (followMode) {
+      if (resetSpeed) {
+        motorSpeed = baseSpeed;
+        resetSpeed = false;
+      }
+      backwardAction.enable();
+      buzzAction.enable();
+    } else {
+      stop(enablePins, rightDirPins, leftDirPins);
+      backwards(enablePins,rightDirPins,leftDirPins, 180);
+      turn(0, 200, false);
+    }
+    
+  } else {
+    if (followMode) {
+       backwardAction.disable();
+       buzzAction.disable();
+       digitalWrite(buzPin, LOW);
+       buzzState = false;
+       resetSpeed = true;
+       // motorSpeed = baseSpeed;
+    }
+    
+    forwardAction.enable();
+  }
+    
+  
+  /*
   long distance;                    // Distance reading from rangefinder.
 
   forward(enablePins, rightDirPins, leftDirPins, 255);                        // Robot moves forward continuously.
@@ -103,7 +169,8 @@ void loop() {
 
   turn(0, 200, sound_on);                   // Turn right 300ms.
   stop(enablePins, rightDirPins, leftDirPins);
-  servoSweep(servoSpeed);  
+  servoSweep(servoSpeed);
+  */
 }
 
 /*
@@ -117,6 +184,16 @@ void blink(int whatPin, int howManyTimes, int milliSecs, int pauseMillis) {
     digitalWrite(whatPin, LOW);
     delay(pauseMillis/2);
   }
+}
+
+void blink() {
+  ledState ? ledState=false : ledState=true;
+  digitalWrite(ledPin,ledState);
+}
+
+void buzz() {
+  buzzState ? buzzState=false : buzzState=true;
+  digitalWrite(buzPin,buzzState);
 }
 
 void on_melody () {
