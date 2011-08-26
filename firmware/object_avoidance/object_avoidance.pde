@@ -34,7 +34,7 @@ int noteDurations[] = {4, 8, 8, 4,4,4,4,4 };
 #define buzPin       8
 
 #define  debug        true
-#define  sound_on     false
+#define  sound_on     true
 
 // distance options
 #define BOUNDARY   20      // (cm) Avoid objects closer than 20cm.
@@ -73,8 +73,6 @@ TimedAction readAction   = TimedAction(INTERVAL, readDistance);
 
 TimedAction forwardAction  = TimedAction(20, forward);
 TimedAction backwardAction = TimedAction(20, backwards);
-TimedAction turnAction = TimedAction(20, turn);
-
 
 void setup() {
   if (debug){
@@ -107,18 +105,18 @@ void setup() {
 
 void loop() {
   blinkAction.check();
-  buzzAction.check();
+  servoSweep(5);
   
-  buzzAction.disable();
+  // buzzAction.check();
+  
+  // buzzAction.disable();
   
   readAction.check();
   forwardAction.check();
   backwardAction.check();
   backwardAction.disable();
-  turnAction.check();
-  turnAction.disable();
 
-  
+ 
   if (distance < BOUNDARY) {
     
     forwardAction.disable();
@@ -132,8 +130,9 @@ void loop() {
       buzzAction.enable();
     } else {
       stop(enablePins, rightDirPins, leftDirPins);
-      backwards(enablePins,rightDirPins,leftDirPins, 180);
-      turn(0, 200, false);
+      backwards(enablePins,rightDirPins,leftDirPins, 100);
+      long direction = random(2);
+      turn(direction, 50, false);
     }
     
   } else {
@@ -148,29 +147,6 @@ void loop() {
     
     forwardAction.enable();
   }
-    
-  
-  /*
-  long distance;                    // Distance reading from rangefinder.
-
-  forward(enablePins, rightDirPins, leftDirPins, 255);                        // Robot moves forward continuously.
-  do {
-    distance = readDistance();      // Take a distance reading.
-    // Serial.println(distance);       // Print it out.             
-    delay(INTERVAL);                // Delay between readings.
-  } 
-  while(distance >= BOUNDARY);      // Loop while no objects close-by.
-
-  // Robot has sensed a nearby object and exited the while loop.
-  // Take evasive action to avoid object.          
-  stop(enablePins, rightDirPins, leftDirPins);
-  backwards(enablePins, rightDirPins, leftDirPins, 80);
-  delay(800);
-
-  turn(0, 200, sound_on);                   // Turn right 300ms.
-  stop(enablePins, rightDirPins, leftDirPins);
-  servoSweep(servoSpeed);
-  */
 }
 
 /*
